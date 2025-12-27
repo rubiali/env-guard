@@ -29,3 +29,41 @@ def cast_value(value: str, expected_type: str):
     raise ValidationError(f"Unknown type '{expected_type}'")
 
 
+def validate_env(env_content: str, schema_path: str) -> dict:
+    env = parse_env(env_content)
+    schema = load_schema(schema_path)["variables"]
+
+    missing = []
+    invalid = []
+    validated = {}
+
+    for key, rules in schema.items():
+        if rules.get("required") and key not in env:
+            missing.append(key)
+            continue
+
+        if key in env:
+            try:
+                value = cast_value(env[key], rules["type"])
+
+                if "min" in rules and value < rules["min"]:
+                    raise ValidationError(f"Value < min ({rules['min']})")
+
+                if "max" in rules and value > rules["max"]:
+                    raise ValidationError(f"Value > max ({rules['max']})")
+
+                validated[key] = value
+            except ValidationError as e:
+                invalid.append({
+                    "key": key,
+                    "reason": str(e)
+                })
+
+    extra = [k for k in env.keys() if k not in schema]
+
+    return {
+        "missing": missing,
+        "invalid": invalid,
+        "extra": extra,
+        "validated": validated
+    }
