@@ -6,6 +6,7 @@ from app.core.validator import validate_env
 from app.core.diff import compare_envs
 from app.core.parser import EnvParseError
 from app.core.schema import SchemaLoadError
+from fastapi.staticfiles import StaticFiles
 
 SCHEMA_PATH = "app/schemas/schema.yaml"
 
@@ -16,6 +17,12 @@ app = FastAPI(
     title="Env-Guard",
     description="Validate and compare .env files using a fixed schema",
     version="0.1.0"
+)
+
+app.mount(
+    "/static",
+    StaticFiles(directory=FRONTEND_DIR / "static"),
+    name="static"
 )
 
 # --------------------
