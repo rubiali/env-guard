@@ -6,6 +6,9 @@ from fastapi.responses import JSONResponse
 from app.core.validator import validate_env
 from app.core.parser import EnvParseError
 from app.core.schema import SchemaLoadError
+from fastapi import UploadFile, File
+from app.core.diff import compare_envs
+
 
 SCHEMA_PATH = "app/schemas/schema.yaml"
 
@@ -39,3 +42,21 @@ async def validate_env_file(file: UploadFile = File(...)):
     except Exception as e:
         # fallback defensivo
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+@app.post("/compare")
+async def compare_env_files(
+    env_a: UploadFile = File(...),
+    env_b: UploadFile = File(...)
+):
+    for f in (env_a, env_b):
+        if not f.filename.endswith(".env"):
+            raise HTTPException(status_code=400, detail="Only .env files are allowed")
+
+    try:
+        content_a = (await env_a.read()).decode("utf-8")
+        content_b = (await env_b.read()).decode("utf-8")
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid file encoding")
+
+    result = compare_envs(content_a, content_b, SCHEMA_PATH)
+    return JSONResponse(content=result)
