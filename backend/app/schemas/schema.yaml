@@ -8,3 +8,7 @@ variables:
     required: true
     min: 1024
     max: 65535
+
+  DATABASE_URL:
+    type: string
+    required: true
