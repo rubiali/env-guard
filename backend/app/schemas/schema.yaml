@@ -1,0 +1,10 @@
+variables:
+  DEBUG:
+    type: bool
+    required: true
+
+  PORT:
+    type: int
+    required: true
+    min: 1024
+    max: 65535
