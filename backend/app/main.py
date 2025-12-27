@@ -49,8 +49,7 @@ def ui_compare():
 # --------------------
 
 def _is_env_file(filename: str) -> bool:
-    # aceita .env, .env.dev, .env.prod, etc
-    return ".env" in filename
+    return True
 
 
 @app.post("/validate")
