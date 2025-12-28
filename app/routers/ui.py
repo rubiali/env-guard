@@ -1,28 +1,32 @@
 # app/routers/ui.py
 
-from pathlib import Path
-from fastapi import APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Request
+from fastapi.templating import Jinja2Templates
 
 router = APIRouter()
 
-TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
+templates: Jinja2Templates = None  # injetado pelo main.py
 
 
-def _read_html(filename: str) -> str:
-    return (TEMPLATES_DIR / filename).read_text(encoding="utf-8")
+@router.get("/")
+def index(request: Request):
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request}
+    )
 
 
-@router.get("/", response_class=HTMLResponse)
-def index():
-    return _read_html("index.html")
+@router.get("/ui/validate")
+def ui_validate(request: Request):
+    return templates.TemplateResponse(
+        "validate.html",
+        {"request": request, "page_title": "Validate"}
+    )
 
 
-@router.get("/ui/validate", response_class=HTMLResponse)
-def ui_validate():
-    return _read_html("validate.html")
-
-
-@router.get("/ui/compare", response_class=HTMLResponse)
-def ui_compare():
-    return _read_html("compare.html")
+@router.get("/ui/compare")
+def ui_compare(request: Request):
+    return templates.TemplateResponse(
+        "compare.html",
+        {"request": request, "page_title": "Compare"}
+    )

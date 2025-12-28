@@ -1,116 +1,79 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Env-Guard | Validate</title>
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    rel="stylesheet"
-  />
-  <link href="/static/css/styles.css" rel="stylesheet" />
-  <script>
-    (function() {
-      const saved = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = saved || (prefersDark ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
-  </script>
-</head>
-<body>
+{% extends "base.html" %}
 
-<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-  <i class="bi bi-sun-fill icon-sun"></i>
-  <i class="bi bi-moon-fill icon-moon"></i>
-</button>
+{% block title %} | Validate{% endblock %}
 
-<div class="container py-5" style="max-width: 700px;">
+{% block back_link %}
+<a href="/" class="back-link">
+  <i class="bi bi-arrow-left"></i>
+  Back to home
+</a>
+{% endblock %}
 
-  <a href="/" class="back-link">
-    <i class="bi bi-arrow-left"></i>
-    Back to home
-  </a>
-
-  <div class="brand-header">
-    <i class="bi bi-shield-check"></i>
-    <h1>Validate</h1>
-  </div>
-  <p class="brand-subtitle">Check a .env file against a schema</p>
-
-  <form id="validate-form" class="form-card">
-
-    <div class="mb-3">
-      <label class="form-label fw-medium">.env file</label>
-      <input type="file" class="form-control" id="envFile" required />
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label fw-medium">Schema</label>
-      <select class="form-select" id="schemaSelect">
-        <option value="generic" selected>Generic</option>
-        <option value="flask">Flask</option>
-        <option value="fastapi">FastAPI</option>
-        <option value="django">Django</option>
-        <option value="node">Node.js</option>
-        <option value="custom">Custom (upload)</option>
-      </select>
-    </div>
-
-    <div class="mb-3 d-none" id="customSchemaBlock">
-      <label class="form-label fw-medium">Custom schema (.yaml)</label>
-      <input
-        type="file"
-        class="form-control"
-        id="schemaFile"
-        accept=".yaml,.yml"
-      />
-      <div class="form-text">
-        Upload your own schema. This will override presets.
-      </div>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100" id="submitBtn">
-      <span><i class="bi bi-check2-circle me-2"></i>Validate</span>
-    </button>
-  </form>
-
-  <!-- Result Area -->
-  <div id="resultPanel" class="result-panel d-none">
-    
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="mb-0 fw-semibold">Results</h5>
-      
-      <div class="view-toggle-group">
-        <button type="button" class="view-toggle-btn active" data-view="formatted">
-          <i class="bi bi-table"></i>
-          Formatted
-        </button>
-        <button type="button" class="view-toggle-btn" data-view="json">
-          <i class="bi bi-code-slash"></i>
-          JSON
-        </button>
-      </div>
-    </div>
-
-    <div id="resultFormatted"></div>
-    <pre id="resultJson" class="result-json d-none"></pre>
-  </div>
-
+{% block header %}
+<div class="brand-header">
+  <i class="bi bi-shield-check"></i>
+  <h1>Validate</h1>
 </div>
+<p class="brand-subtitle">Check a .env file against a schema</p>
+{% endblock %}
 
-<footer class="site-footer">
-  <a href="https://github.com/Rubiali" target="_blank" rel="noopener" class="author-credit">
-    <i class="bi bi-code-slash"></i>
-    Built by <span class="author-name">rubiali</span>
-    <i class="bi bi-github"></i>
-  </a>
-</footer>
+{% block content %}
+<form id="validate-form" class="form-card">
 
-<script src="/static/js/app.js"></script>
-</body>
-</html>
+  <div class="mb-3">
+    <label class="form-label fw-medium">.env file</label>
+    <input type="file" class="form-control" id="envFile" required />
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label fw-medium">Schema</label>
+    <select class="form-select" id="schemaSelect">
+      <option value="generic" selected>Generic</option>
+      <option value="flask">Flask</option>
+      <option value="fastapi">FastAPI</option>
+      <option value="django">Django</option>
+      <option value="node">Node.js</option>
+      <option value="custom">Custom (upload)</option>
+    </select>
+  </div>
+
+  <div class="mb-3 d-none" id="customSchemaBlock">
+    <label class="form-label fw-medium">Custom schema (.yaml)</label>
+    <input
+      type="file"
+      class="form-control"
+      id="schemaFile"
+      accept=".yaml,.yml"
+    />
+    <div class="form-text">
+      Upload your own schema. This will override presets.
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+    <span><i class="bi bi-check2-circle me-2"></i>Validate</span>
+  </button>
+</form>
+
+<!-- Result Area -->
+<div id="resultPanel" class="result-panel d-none">
+  
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0 fw-semibold">Results</h5>
+    
+    <div class="view-toggle-group">
+      <button type="button" class="view-toggle-btn active" data-view="formatted">
+        <i class="bi bi-table"></i>
+        Formatted
+      </button>
+      <button type="button" class="view-toggle-btn" data-view="json">
+        <i class="bi bi-code-slash"></i>
+        JSON
+      </button>
+    </div>
+  </div>
+
+  <div id="resultFormatted"></div>
+  <pre id="resultJson" class="result-json d-none"></pre>
+</div>
+{% endblock %}

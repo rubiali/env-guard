@@ -3,3 +3,4 @@ uvicorn
 pyyaml
 python-multipart
 pytest
+jinja2
