@@ -33,16 +33,30 @@ Projeto desenvolvido com **FastAPI**, **Python puro** e **Docker**.
 
 ```
 env-guard/
-├── backend/
-│   └── app/
-│       ├── main.py
-│       ├── core/
-│       └── schemas/
-├── frontend/
+├── app/
+│   ├── core/
+│   ├── routers/
+│   ├── schemas/
 │   ├── static/
-│   └── *.html
+│   │   ├── css/
+│   │   └── js/
+│   ├── templates/
+│   ├── __init__.py
+│   └── main.py
+│
+├── tests/
+│   ├── fixtures/
+│   ├── conftest.py
+│   ├── test_diff.py
+│   ├── test_parser.py
+│   └── test_validator.py
+│
 ├── Dockerfile
+├── .dockerignore
+├── .gitignore
+├── requirements.txt
 └── README.md
+
 ```
 
 ---
@@ -109,11 +123,13 @@ Acessos:
 
 - Python 3.11
 - FastAPI
-- Starlette
+- Uvicorn
+- Jinja2
 - PyYAML
+- python-multipart
 - Pytest
 - Docker
-- Bootstrap
+
 
 ---
 
