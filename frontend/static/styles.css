@@ -1,0 +1,538 @@
+/* ===================================
+   Env-Guard | Custom Styles
+=================================== */
+
+:root {
+  --brand-primary: #4361ee;
+  --brand-warning: #f59e0b;
+  --brand-success: #10b981;
+  --brand-danger: #ef4444;
+  --brand-info: #6366f1;
+  --bg-subtle: #f8fafc;
+  --border-color: #e2e8f0;
+  --text-muted: #64748b;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+/* ===================================
+   Header / Branding
+=================================== */
+
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-header i {
+  font-size: 2rem;
+  color: var(--brand-primary);
+}
+
+.brand-header h1 {
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.brand-subtitle {
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+/* ===================================
+   Cards
+=================================== */
+
+.form-card {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+}
+
+/* ===================================
+   Buttons
+=================================== */
+
+.btn-primary {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+.btn-primary:hover {
+  background: #3651d4;
+  border-color: #3651d4;
+}
+
+.btn-warning {
+  background: var(--brand-warning);
+  border-color: var(--brand-warning);
+  color: #fff;
+}
+
+.btn-warning:hover {
+  background: #d97706;
+  border-color: #d97706;
+  color: #fff;
+}
+
+/* ===================================
+   Home Page Cards
+=================================== */
+
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgb(0 0 0 / 0.1);
+  color: inherit;
+}
+
+.action-card.validate {
+  border-left: 4px solid var(--brand-primary);
+}
+
+.action-card.compare {
+  border-left: 4px solid var(--brand-warning);
+}
+
+.action-card .icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.action-card.validate .icon-wrapper {
+  background: rgba(67, 97, 238, 0.1);
+  color: var(--brand-primary);
+}
+
+.action-card.compare .icon-wrapper {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--brand-warning);
+}
+
+.action-card .card-content h5 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.action-card .card-content p {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* ===================================
+   Toggle Switch
+=================================== */
+
+.view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.view-toggle .form-check-input {
+  width: 2.5rem;
+  height: 1.25rem;
+}
+
+/* ===================================
+   Result Panel
+=================================== */
+
+.result-panel {
+  margin-top: 1.5rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-json {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1.5rem;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  overflow-x: auto;
+  max-height: 500px;
+}
+
+/* ===================================
+   Formatted Result Sections
+=================================== */
+
+.result-section {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.result-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.section-header.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
+}
+
+.section-header.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.section-header.warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+}
+
+.section-header.info {
+  background: rgba(99, 102, 241, 0.1);
+  color: #4f46e5;
+}
+
+.section-header.neutral {
+  background: #f8fafc;
+  color: #475569;
+}
+
+.section-body {
+  padding: 0;
+}
+
+.section-body.empty {
+  padding: 1rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* ===================================
+   Data Table (inside sections)
+=================================== */
+
+.data-table {
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  text-align: left;
+  color: #475569;
+}
+
+.data-table .key-cell {
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 0.8125rem;
+  color: #1e293b;
+}
+
+.data-table .value-cell {
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 0.8125rem;
+  color: var(--brand-primary);
+}
+
+.data-table .reason-cell {
+  color: #dc2626;
+}
+
+/* ===================================
+   Simple List (for missing/extra)
+=================================== */
+
+.simple-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.simple-list li {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 0.8125rem;
+}
+
+.simple-list li:last-child {
+  border-bottom: none;
+}
+
+/* ===================================
+   Compare Specific
+=================================== */
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .compare-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.env-panel {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.env-panel-header {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.env-panel-header.env-a {
+  border-left: 3px solid var(--brand-primary);
+}
+
+.env-panel-header.env-b {
+  border-left: 3px solid var(--brand-warning);
+}
+
+.diff-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.diff-badge.only-a {
+  background: rgba(67, 97, 238, 0.1);
+  color: var(--brand-primary);
+}
+
+.diff-badge.only-b {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--brand-warning);
+}
+
+.diff-badge.different {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--brand-danger);
+}
+
+/* ===================================
+   Summary Stats
+=================================== */
+
+.summary-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.stat-item i {
+  font-size: 1rem;
+}
+
+.stat-item.success i { color: var(--brand-success); }
+.stat-item.danger i { color: var(--brand-danger); }
+.stat-item.warning i { color: var(--brand-warning); }
+.stat-item.info i { color: var(--brand-info); }
+
+/* ===================================
+   Back Link
+=================================== */
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: var(--brand-primary);
+}
+
+/* ===================================
+   Loading State
+=================================== */
+
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  top: 50%;
+  left: 50%;
+  margin: -0.5rem 0 0 -0.5rem;
+  border: 2px solid #fff;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.btn-loading span {
+  visibility: hidden;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===================================
+   View Toggle - Segmented Control
+=================================== */
+
+.view-toggle-group {
+  display: inline-flex;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-toggle-btn:hover:not(.active) {
+  color: #475569;
+}
+
+.view-toggle-btn.active {
+  background: #fff;
+  color: var(--brand-primary);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+}
+
+.view-toggle-btn i {
+  font-size: 0.875rem;
+}
+
+/* ===================================
+   Footer / Author
+=================================== */
+
+.site-footer {
+  margin-top: 4rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.author-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.author-credit:hover {
+  color: var(--brand-primary);
+}
+
+.author-credit i {
+  font-size: 0.75rem;
+}
+
+.author-name {
+  font-weight: 600;
+  color: #475569;
+  transition: color 0.2s ease;
+}
+
+.author-credit:hover .author-name {
+  color: var(--brand-primary);
+}
+
+
