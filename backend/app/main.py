@@ -9,8 +9,10 @@ from fastapi.staticfiles import StaticFiles
 
 SCHEMA_PATH = "app/schemas/schema.yaml"
 
-# caminho absoluto para frontend/
-FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BASE_DIR.parent / "frontend"
 
 app = FastAPI(
     title="Env-Guard",
