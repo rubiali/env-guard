@@ -1,39 +1,85 @@
 {% extends "base.html" %}
 
-{% block max_width %}600{% endblock %}
+{% block max_width %}800{% endblock %}
 
 {% block header %}
-<div class="text-center mb-5">
-  <div class="brand-header justify-content-center">
+<div class="hero-section">
+  <div class="hero-icon">
     <i class="bi bi-shield-check"></i>
-    <h1>Env-Guard</h1>
   </div>
-  <p class="brand-subtitle">
-    Validate and compare environment configuration files
+  <h1 class="hero-title">Env-Guard</h1>
+  <p class="hero-subtitle">
+    Validate and compare environment configuration files with ease.<br>
+    <span class="hero-highlight">100% local processing — your data never leaves your browser.</span>
   </p>
 </div>
 {% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column gap-3">
-  <a href="/ui/validate" class="action-card validate">
-    <div class="icon-wrapper">
+<div class="features-grid">
+  <a href="/ui/validate" class="feature-card validate">
+    <div class="feature-icon">
       <i class="bi bi-file-earmark-check"></i>
     </div>
-    <div class="card-content">
-      <h5>Validate .env</h5>
-      <p>Check your environment file against a schema</p>
+    <div class="feature-content">
+      <h3>Validate .env</h3>
+      <p>Check your environment file against predefined or custom schemas</p>
+    </div>
+    <div class="feature-arrow">
+      <i class="bi bi-arrow-right"></i>
     </div>
   </a>
 
-  <a href="/ui/compare" class="action-card compare">
-    <div class="icon-wrapper">
+  <a href="/ui/compare" class="feature-card compare">
+    <div class="feature-icon">
       <i class="bi bi-files"></i>
     </div>
-    <div class="card-content">
-      <h5>Compare environments</h5>
-      <p>Find differences between two .env files</p>
+    <div class="feature-content">
+      <h3>Compare Environments</h3>
+      <p>Find differences between development, staging, and production configs</p>
+    </div>
+    <div class="feature-arrow">
+      <i class="bi bi-arrow-right"></i>
     </div>
   </a>
+</div>
+
+<!-- Schema Templates Preview -->
+<div class="templates-section">
+  <div class="section-title">
+    <i class="bi bi-collection"></i>
+    <span>Available Schemas</span>
+  </div>
+  <div class="templates-grid" id="schemasGrid">
+    <div class="template-loading">
+      <div class="spinner-border spinner-border-sm" role="status"></div>
+      <span>Loading schemas...</span>
+    </div>
+  </div>
+</div>
+
+<!-- Info Cards -->
+<div class="info-grid">
+  <div class="info-card">
+    <div class="info-icon">
+      <i class="bi bi-lock"></i>
+    </div>
+    <h4>Secure</h4>
+    <p>All processing happens locally in your browser</p>
+  </div>
+  <div class="info-card">
+    <div class="info-icon">
+      <i class="bi bi-speedometer2"></i>
+    </div>
+    <h4>Fast</h4>
+    <p>Instant validation with detailed feedback</p>
+  </div>
+  <div class="info-card">
+    <div class="info-icon">
+      <i class="bi bi-puzzle"></i>
+    </div>
+    <h4>Flexible</h4>
+    <p>Custom schemas for any framework</p>
+  </div>
 </div>
 {% endblock %}

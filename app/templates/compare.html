@@ -2,7 +2,7 @@
 
 {% block title %} | Compare{% endblock %}
 
-{% block max_width %}900{% endblock %}
+{% block max_width %}1100{% endblock %}
 
 {% block back_link %}
 <a href="/" class="back-link">
@@ -12,76 +12,143 @@
 {% endblock %}
 
 {% block header %}
-<div class="brand-header">
-  <i class="bi bi-shield-check"></i>
-  <h1>Compare</h1>
+<div class="page-header">
+  <div class="page-header-icon compare">
+    <i class="bi bi-files"></i>
+  </div>
+  <div class="page-header-text">
+    <h1>Compare</h1>
+    <p>Compare two .env files and detect differences</p>
+  </div>
 </div>
-<p class="brand-subtitle">Compare two .env files and detect differences</p>
 {% endblock %}
 
 {% block content %}
-<form id="compare-form" class="form-card">
+<div class="workspace-layout">
+  <!-- Left: Form -->
+  <div class="workspace-main">
+    <form id="compare-form" class="form-card">
+      <div class="compare-files-grid">
+        <div class="form-section">
+          <label class="form-label-pro env-a">
+            <i class="bi bi-file-earmark-text"></i>
+            Environment A
+          </label>
+          <div class="file-drop-zone" id="envADropZone">
+            <input type="file" class="file-input" id="envA" accept=".env,.env.*" required />
+            <div class="drop-content">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <span class="drop-text">Drop .env file</span>
+              <span class="drop-hint">or click to browse</span>
+            </div>
+            <div class="file-selected d-none">
+              <i class="bi bi-file-earmark-check"></i>
+              <span class="file-name"></span>
+              <button type="button" class="file-remove" aria-label="Remove file">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
+        </div>
 
-  <div class="row">
-    <div class="col-md-6 mb-3">
-      <label class="form-label fw-medium">Env A</label>
-      <input type="file" class="form-control" id="envA" required />
-    </div>
-    <div class="col-md-6 mb-3">
-      <label class="form-label fw-medium">Env B</label>
-      <input type="file" class="form-control" id="envB" required />
-    </div>
-  </div>
+        <div class="compare-arrow">
+          <i class="bi bi-arrow-left-right"></i>
+        </div>
 
-  <div class="mb-3">
-    <label class="form-label fw-medium">Schema</label>
-    <select class="form-select" id="schemaSelect">
-      <option value="generic" selected>Generic</option>
-      <option value="flask">Flask</option>
-      <option value="fastapi">FastAPI</option>
-      <option value="django">Django</option>
-      <option value="node">Node.js</option>
-      <option value="custom">Custom (upload)</option>
-    </select>
-  </div>
+        <div class="form-section">
+          <label class="form-label-pro env-b">
+            <i class="bi bi-file-earmark-text"></i>
+            Environment B
+          </label>
+          <div class="file-drop-zone" id="envBDropZone">
+            <input type="file" class="file-input" id="envB" accept=".env,.env.*" required />
+            <div class="drop-content">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <span class="drop-text">Drop .env file</span>
+              <span class="drop-hint">or click to browse</span>
+            </div>
+            <div class="file-selected d-none">
+              <i class="bi bi-file-earmark-check"></i>
+              <span class="file-name"></span>
+              <button type="button" class="file-remove" aria-label="Remove file">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <div class="mb-3 d-none" id="customSchemaBlock">
-    <label class="form-label fw-medium">Custom schema (.yaml)</label>
-    <input
-      type="file"
-      class="form-control"
-      id="schemaFile"
-      accept=".yaml,.yml"
-    />
-    <div class="form-text">
-      Upload your own schema to override presets
-    </div>
-  </div>
+      <div class="form-section">
+        <label class="form-label-pro">
+          <i class="bi bi-diagram-3"></i>
+          Schema
+        </label>
+        <div class="schema-selector" id="schemaSelector">
+          <!-- Populated by JS -->
+        </div>
+      </div>
 
-  <button type="submit" class="btn btn-warning w-100" id="submitBtn">
-    <span><i class="bi bi-files me-2"></i>Compare</span>
-  </button>
-</form>
+      <div class="form-section d-none" id="customSchemaBlock">
+        <label class="form-label-pro">
+          <i class="bi bi-file-earmark-code"></i>
+          Custom Schema
+        </label>
+        <div class="file-drop-zone small" id="schemaDropZone">
+          <input type="file" class="file-input" id="schemaFile" accept=".yaml,.yml" />
+          <div class="drop-content">
+            <i class="bi bi-cloud-arrow-up"></i>
+            <span class="drop-text">Upload YAML schema</span>
+          </div>
+          <div class="file-selected d-none">
+            <i class="bi bi-file-earmark-code"></i>
+            <span class="file-name"></span>
+            <button type="button" class="file-remove" aria-label="Remove file">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+      </div>
 
-<!-- Result Area -->
-<div id="resultPanel" class="result-panel d-none">
-  
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0 fw-semibold">Results</h5>
-    
-    <div class="view-toggle-group">
-      <button type="button" class="view-toggle-btn active" data-view="formatted">
-        <i class="bi bi-table"></i>
-        Formatted
+      <button type="submit" class="btn-submit compare" id="submitBtn">
+        <i class="bi bi-arrow-left-right"></i>
+        <span>Compare</span>
       </button>
-      <button type="button" class="view-toggle-btn" data-view="json">
-        <i class="bi bi-code-slash"></i>
-        JSON
-      </button>
+    </form>
+
+    <!-- Result Area -->
+    <div id="resultPanel" class="result-panel d-none">
+      <div class="result-header">
+        <h5><i class="bi bi-clipboard-data"></i> Results</h5>
+        <div class="view-toggle-group">
+          <button type="button" class="view-toggle-btn active" data-view="formatted">
+            <i class="bi bi-table"></i>
+            Formatted
+          </button>
+          <button type="button" class="view-toggle-btn" data-view="json">
+            <i class="bi bi-code-slash"></i>
+            JSON
+          </button>
+        </div>
+      </div>
+      <div id="resultFormatted"></div>
+      <pre id="resultJson" class="result-json d-none"></pre>
     </div>
   </div>
 
-  <div id="resultFormatted"></div>
-  <pre id="resultJson" class="result-json d-none"></pre>
+  <!-- Right: Schema Preview -->
+  <div class="workspace-sidebar">
+    <div class="schema-preview-card" id="schemaPreview">
+      <div class="preview-header">
+        <i class="bi bi-file-earmark-code"></i>
+        <span>Schema Preview</span>
+      </div>
+      <div class="preview-body">
+        <div class="preview-placeholder">
+          <i class="bi bi-diagram-3"></i>
+          <span>Select a schema to see its structure</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

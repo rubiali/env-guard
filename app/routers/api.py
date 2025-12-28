@@ -1,13 +1,29 @@
-# app/routers/api.py
-# (sem alterações - já está correto)
+# backend/app/routers/api.py
 
-from fastapi import APIRouter, UploadFile, File, Query
+from fastapi import APIRouter, UploadFile, File, Query, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.core.validator import validate_env
 from app.core.diff import compare_envs
+from app.core.schema_loader import load_schema, list_schemas
 
-router = APIRouter()
+router = APIRouter(prefix="/api", tags=["api"])
+
+
+@router.get("/schemas")
+async def get_schemas():
+    """Lista todos os schemas disponíveis com metadados."""
+    return JSONResponse(content=list_schemas())
+
+
+@router.get("/schemas/{schema_name}")
+async def get_schema(schema_name: str):
+    """Retorna a estrutura de um schema específico."""
+    try:
+        schema = load_schema(schema_name)
+        return JSONResponse(content=schema)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Schema '{schema_name}' not found")
 
 
 @router.post("/validate")

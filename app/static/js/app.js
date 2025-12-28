@@ -1,6 +1,6 @@
 /* ===============================================================
-   Env-Guard | Frontend Logic
-=============================================================== */
+   Env-Guard | Frontend Logic - Professional Redesign
+   =============================================================== */
 
 (function () {
   "use strict";
@@ -21,12 +21,10 @@
 
   if (themeToggle) {
     themeToggle.addEventListener("click", () => {
-      const current = getCurrentTheme();
-      setTheme(current === "dark" ? "light" : "dark");
+      setTheme(getCurrentTheme() === "dark" ? "light" : "dark");
     });
   }
 
-  // Listen for system theme changes (if user hasn't manually set)
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
     if (!localStorage.getItem("theme")) {
       setTheme(e.matches ? "dark" : "light");
@@ -34,9 +32,16 @@
   });
 
   /* ---------------------------------------------------------------
+     Global State
+  --------------------------------------------------------------- */
+  let schemasData = [];
+  let selectedSchema = "generic";
+
+  /* ---------------------------------------------------------------
      DOM Elements
   --------------------------------------------------------------- */
-  const schemaSelect = document.getElementById("schemaSelect");
+  const schemaSelector = document.getElementById("schemaSelector");
+  const schemaPreview = document.getElementById("schemaPreview");
   const customSchemaBlock = document.getElementById("customSchemaBlock");
   const validateForm = document.getElementById("validate-form");
   const compareForm = document.getElementById("compare-form");
@@ -44,24 +49,259 @@
   const resultFormatted = document.getElementById("resultFormatted");
   const resultJson = document.getElementById("resultJson");
   const submitBtn = document.getElementById("submitBtn");
-
-  let currentData = null;
-  let currentMode = null;
+  const schemasGrid = document.getElementById("schemasGrid");
 
   /* ---------------------------------------------------------------
-     Schema Selector Toggle
+     Load Schemas
   --------------------------------------------------------------- */
-  if (schemaSelect && customSchemaBlock) {
-    schemaSelect.addEventListener("change", () => {
-      customSchemaBlock.classList.toggle(
-        "d-none",
-        schemaSelect.value !== "custom"
-      );
+  async function loadSchemas() {
+    try {
+      const res = await fetch("/api/schemas");
+      schemasData = await res.json();
+      
+      if (schemasGrid) {
+        renderSchemasGrid(schemasData);
+      }
+      
+      if (schemaSelector) {
+        renderSchemaSelector(schemasData);
+        // Load first schema preview
+        if (schemasData.length > 0) {
+          loadSchemaPreview(schemasData[0].id);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load schemas:", err);
+      if (schemasGrid) {
+        schemasGrid.innerHTML = `<div class="template-loading">Failed to load schemas</div>`;
+      }
+    }
+  }
+
+  /* ---------------------------------------------------------------
+     Render Schemas Grid (Home Page)
+  --------------------------------------------------------------- */
+  function renderSchemasGrid(schemas) {
+    if (!schemasGrid) return;
+    
+    schemasGrid.innerHTML = schemas.map(schema => `
+      <div class="template-card">
+        <div class="template-header">
+          <div class="template-icon" style="background: ${schema.color}15; color: ${schema.color}">
+            <i class="bi ${schema.icon}"></i>
+          </div>
+          <span class="template-name">${schema.name}</span>
+        </div>
+        <p class="template-desc">${schema.description}</p>
+        <div class="template-stats">
+          <span class="template-stat">
+            <i class="bi bi-braces"></i>
+            ${schema.variables} vars
+          </span>
+          <span class="template-stat required">
+            <i class="bi bi-asterisk"></i>
+            ${schema.required} required
+          </span>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  /* ---------------------------------------------------------------
+     Render Schema Selector (Validate/Compare Pages)
+  --------------------------------------------------------------- */
+  function renderSchemaSelector(schemas) {
+    if (!schemaSelector) return;
+
+    const customOption = {
+      id: "custom",
+      name: "Custom",
+      icon: "bi-gear",
+      color: "#64748b",
+      variables: "?",
+    };
+
+    const allSchemas = [...schemas, customOption];
+
+    schemaSelector.innerHTML = allSchemas.map(schema => `
+      <div class="schema-option">
+        <input 
+          type="radio" 
+          name="schema" 
+          id="schema-${schema.id}" 
+          value="${schema.id}"
+          ${schema.id === "generic" ? "checked" : ""}
+        />
+        <label for="schema-${schema.id}">
+          <div class="schema-option-icon" style="color: ${schema.color}">
+            <i class="bi ${schema.icon}"></i>
+          </div>
+          <span class="schema-option-name">${schema.name}</span>
+          <span class="schema-option-count">${schema.variables} vars</span>
+        </label>
+      </div>
+    `).join("");
+
+    // Add change listeners
+    schemaSelector.querySelectorAll('input[name="schema"]').forEach(input => {
+      input.addEventListener("change", (e) => {
+        selectedSchema = e.target.value;
+        
+        if (customSchemaBlock) {
+          customSchemaBlock.classList.toggle("d-none", selectedSchema !== "custom");
+        }
+        
+        if (selectedSchema !== "custom") {
+          loadSchemaPreview(selectedSchema);
+        } else {
+          renderSchemaPreviewPlaceholder("Upload a custom YAML schema");
+        }
+      });
     });
   }
 
   /* ---------------------------------------------------------------
-     View Toggle (Segmented Control)
+     Load Schema Preview
+  --------------------------------------------------------------- */
+  async function loadSchemaPreview(schemaId) {
+    if (!schemaPreview) return;
+
+    const previewBody = schemaPreview.querySelector(".preview-body");
+    previewBody.innerHTML = `
+      <div class="preview-placeholder">
+        <div class="spinner-border spinner-border-sm" role="status"></div>
+        <span>Loading...</span>
+      </div>
+    `;
+
+    try {
+      const res = await fetch(`/api/schemas/${schemaId}`);
+      const schema = await res.json();
+      renderSchemaPreview(schema, schemaId);
+    } catch (err) {
+      previewBody.innerHTML = `
+        <div class="preview-placeholder">
+          <i class="bi bi-exclamation-triangle"></i>
+          <span>Failed to load schema</span>
+        </div>
+      `;
+    }
+  }
+
+  /* ---------------------------------------------------------------
+     Render Schema Preview
+  --------------------------------------------------------------- */
+  function renderSchemaPreview(schema, schemaId) {
+    if (!schemaPreview) return;
+
+    const meta = schemasData.find(s => s.id === schemaId) || {};
+    const previewBody = schemaPreview.querySelector(".preview-body");
+    const variables = schema.variables || {};
+    const varEntries = Object.entries(variables);
+
+    let html = `
+      <div class="preview-meta">
+        <div class="preview-meta-name">${meta.name || schemaId}</div>
+        <div class="preview-meta-desc">${meta.description || ""}</div>
+      </div>
+      <div class="preview-vars-title">Variables (${varEntries.length})</div>
+    `;
+
+    varEntries.forEach(([key, config]) => {
+      const isRequired = config.required === true;
+      const type = config.type || "string";
+
+      html += `
+        <div class="preview-var">
+          <div class="preview-var-indicator ${isRequired ? "required" : "optional"}"></div>
+          <div class="preview-var-content">
+            <div class="preview-var-name">${escapeHtml(key)}</div>
+            <div class="preview-var-meta">
+              <span class="preview-var-type">${type}</span>
+              ${isRequired ? '<span class="preview-var-required">required</span>' : ""}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    previewBody.innerHTML = html;
+  }
+
+  function renderSchemaPreviewPlaceholder(message) {
+    if (!schemaPreview) return;
+    const previewBody = schemaPreview.querySelector(".preview-body");
+    previewBody.innerHTML = `
+      <div class="preview-placeholder">
+        <i class="bi bi-diagram-3"></i>
+        <span>${message}</span>
+      </div>
+    `;
+  }
+
+  /* ---------------------------------------------------------------
+     File Drop Zones
+  --------------------------------------------------------------- */
+  function initFileDropZones() {
+    document.querySelectorAll(".file-drop-zone").forEach(zone => {
+      const input = zone.querySelector(".file-input");
+      const dropContent = zone.querySelector(".drop-content");
+      const fileSelected = zone.querySelector(".file-selected");
+      const fileName = zone.querySelector(".file-name");
+      const removeBtn = zone.querySelector(".file-remove");
+
+      if (!input) return;
+
+      // Drag events
+      ["dragenter", "dragover"].forEach(evt => {
+        zone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          zone.classList.add("dragover");
+        });
+      });
+
+      ["dragleave", "drop"].forEach(evt => {
+        zone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          zone.classList.remove("dragover");
+        });
+      });
+
+      zone.addEventListener("drop", (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length) {
+          input.files = files;
+          updateFileDisplay(files[0]);
+        }
+      });
+
+      // Input change
+      input.addEventListener("change", () => {
+        if (input.files.length) {
+          updateFileDisplay(input.files[0]);
+        }
+      });
+
+      // Remove button
+      if (removeBtn) {
+        removeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          input.value = "";
+          dropContent.classList.remove("d-none");
+          fileSelected.classList.add("d-none");
+        });
+      }
+
+            function updateFileDisplay(file) {
+        if (fileName) fileName.textContent = file.name;
+        if (dropContent) dropContent.classList.add("d-none");
+        if (fileSelected) fileSelected.classList.remove("d-none");
+      }
+    });
+  }
+
+  /* ---------------------------------------------------------------
+     View Toggle
   --------------------------------------------------------------- */
   const viewToggleGroup = document.querySelector(".view-toggle-group");
 
@@ -70,55 +310,51 @@
       const btn = e.target.closest(".view-toggle-btn");
       if (!btn) return;
 
-      viewToggleGroup.querySelectorAll(".view-toggle-btn").forEach((b) => {
-        b.classList.remove("active");
-      });
+      viewToggleGroup.querySelectorAll(".view-toggle-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
 
       const view = btn.dataset.view;
-      resultFormatted.classList.toggle("d-none", view === "json");
-      resultJson.classList.toggle("d-none", view === "formatted");
+      if (resultFormatted) resultFormatted.classList.toggle("d-none", view === "json");
+      if (resultJson) resultJson.classList.toggle("d-none", view === "formatted");
     });
   }
 
   /* ---------------------------------------------------------------
-     Button Loading State
+     Loading State
   --------------------------------------------------------------- */
   function setLoading(loading) {
     if (!submitBtn) return;
-    if (loading) {
-      submitBtn.classList.add("btn-loading");
-      submitBtn.disabled = true;
-    } else {
-      submitBtn.classList.remove("btn-loading");
-      submitBtn.disabled = false;
-    }
+    submitBtn.classList.toggle("btn-loading", loading);
+    submitBtn.disabled = loading;
   }
 
   /* ---------------------------------------------------------------
      Show Result
   --------------------------------------------------------------- */
   function showResult(data, mode) {
-    currentData = data;
-    currentMode = mode;
-
-    resultJson.textContent = JSON.stringify(data, null, 2);
-
-    if (mode === "validate") {
-      resultFormatted.innerHTML = renderValidateResult(data);
-    } else {
-      resultFormatted.innerHTML = renderCompareResult(data);
+    if (resultJson) {
+      resultJson.textContent = JSON.stringify(data, null, 2);
     }
 
+    if (resultFormatted) {
+      resultFormatted.innerHTML = mode === "validate" 
+        ? renderValidateResult(data) 
+        : renderCompareResult(data);
+    }
+
+    // Reset view toggle
     if (viewToggleGroup) {
-      viewToggleGroup.querySelectorAll(".view-toggle-btn").forEach((btn) => {
+      viewToggleGroup.querySelectorAll(".view-toggle-btn").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.view === "formatted");
       });
     }
-    resultFormatted.classList.remove("d-none");
-    resultJson.classList.add("d-none");
 
-    resultPanel.classList.remove("d-none");
+    if (resultFormatted) resultFormatted.classList.remove("d-none");
+    if (resultJson) resultJson.classList.add("d-none");
+    if (resultPanel) resultPanel.classList.remove("d-none");
+
+    // Scroll to results
+    resultPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   /* ---------------------------------------------------------------
@@ -128,9 +364,7 @@
     const { missing, invalid, extra, validated } = data;
     const validatedKeys = Object.keys(validated);
 
-    let html = "";
-
-    html += renderSummary({
+    let html = renderSummary({
       validated: validatedKeys.length,
       missing: missing.length,
       invalid: invalid.length,
@@ -138,39 +372,19 @@
     });
 
     if (validatedKeys.length) {
-      html += renderSection(
-        "success",
-        "bi-check-circle",
-        `Validated (${validatedKeys.length})`,
-        renderKeyValueTable(validated)
-      );
+      html += renderSection("success", "bi-check-circle", `Validated (${validatedKeys.length})`, renderKeyValueTable(validated));
     }
 
     if (missing.length) {
-      html += renderSection(
-        "danger",
-        "bi-x-circle",
-        `Missing (${missing.length})`,
-        renderSimpleList(missing)
-      );
+      html += renderSection("danger", "bi-x-circle", `Missing (${missing.length})`, renderSimpleList(missing));
     }
 
     if (invalid.length) {
-      html += renderSection(
-        "warning",
-        "bi-exclamation-triangle",
-        `Invalid (${invalid.length})`,
-        renderInvalidTable(invalid)
-      );
+      html += renderSection("warning", "bi-exclamation-triangle", `Invalid (${invalid.length})`, renderInvalidTable(invalid));
     }
 
     if (extra.length) {
-      html += renderSection(
-        "info",
-        "bi-info-circle",
-        `Extra (${extra.length})`,
-        renderSimpleList(extra)
-      );
+      html += renderSection("info", "bi-info-circle", `Extra (${extra.length})`, renderSimpleList(extra));
     }
 
     return html;
@@ -182,46 +396,40 @@
   function renderCompareResult(data) {
     const { only_in_a, only_in_b, different_values, validation } = data;
 
-    let html = "";
-
-    html += '<div class="summary-stats">';
-    html += `
-      <div class="stat-item info">
-        <i class="bi bi-dash-circle"></i>
-        <span><strong>${only_in_a.length}</strong> only in A</span>
-      </div>
-      <div class="stat-item warning">
-        <i class="bi bi-plus-circle"></i>
-        <span><strong>${only_in_b.length}</strong> only in B</span>
-      </div>
-      <div class="stat-item danger">
-        <i class="bi bi-arrow-left-right"></i>
-        <span><strong>${different_values.length}</strong> different values</span>
+    let html = `
+      <div class="summary-stats">
+        <div class="stat-item info">
+          <i class="bi bi-dash-circle"></i>
+          <span><strong>${only_in_a.length}</strong> only in A</span>
+        </div>
+        <div class="stat-item warning">
+          <i class="bi bi-plus-circle"></i>
+          <span><strong>${only_in_b.length}</strong> only in B</span>
+        </div>
+        <div class="stat-item danger">
+          <i class="bi bi-arrow-left-right"></i>
+          <span><strong>${different_values.length}</strong> different</span>
+        </div>
       </div>
     `;
-    html += "</div>";
 
     if (only_in_a.length || only_in_b.length || different_values.length) {
-      html += renderSection(
-        "neutral",
-        "bi-diagram-3",
-        "Differences",
-        renderDifferencesTable(data)
-      );
+      html += renderSection("neutral", "bi-diagram-3", "Differences", renderDifferencesTable(data));
     }
 
     html += '<div class="compare-grid">';
-
-    html += '<div class="env-panel">';
-    html += '<div class="env-panel-header env-a">Env A Validation</div>';
-    html += renderEnvValidationCompact(validation.a);
-    html += "</div>";
-
-    html += '<div class="env-panel">';
-    html += '<div class="env-panel-header env-b">Env B Validation</div>';
-    html += renderEnvValidationCompact(validation.b);
-    html += "</div>";
-
+    html += `
+      <div class="env-panel">
+        <div class="env-panel-header env-a">Env A Validation</div>
+        ${renderEnvValidationCompact(validation.a)}
+      </div>
+    `;
+    html += `
+      <div class="env-panel">
+        <div class="env-panel-header env-b">Env B Validation</div>
+        ${renderEnvValidationCompact(validation.b)}
+      </div>
+    `;
     html += "</div>";
 
     return html;
@@ -232,40 +440,39 @@
   --------------------------------------------------------------- */
   function renderDifferencesTable(data) {
     const { only_in_a, only_in_b, different_values, validation } = data;
-
     let rows = "";
 
-    only_in_a.forEach((key) => {
+    only_in_a.forEach(key => {
       const valA = validation.a.validated[key];
       rows += `
         <tr>
           <td class="key-cell">${escapeHtml(key)}</td>
-          <td><span class="diff-badge only-a"><i class="bi bi-dash"></i> Only in A</span></td>
+          <td><span class="diff-badge only-a"><i class="bi bi-dash"></i> Only A</span></td>
           <td class="value-cell">${escapeHtml(formatValue(valA))}</td>
           <td class="text-muted">—</td>
         </tr>
       `;
     });
 
-    only_in_b.forEach((key) => {
+    only_in_b.forEach(key => {
       const valB = validation.b.validated[key];
       rows += `
         <tr>
           <td class="key-cell">${escapeHtml(key)}</td>
-          <td><span class="diff-badge only-b"><i class="bi bi-plus"></i> Only in B</span></td>
+          <td><span class="diff-badge only-b"><i class="bi bi-plus"></i> Only B</span></td>
           <td class="text-muted">—</td>
           <td class="value-cell">${escapeHtml(formatValue(valB))}</td>
         </tr>
       `;
     });
 
-    different_values.forEach((key) => {
+    different_values.forEach(key => {
       const valA = validation.a.validated[key];
       const valB = validation.b.validated[key];
       rows += `
         <tr>
           <td class="key-cell">${escapeHtml(key)}</td>
-          <td><span class="diff-badge different"><i class="bi bi-arrow-left-right"></i> Different</span></td>
+          <td><span class="diff-badge different"><i class="bi bi-arrow-left-right"></i> Diff</span></td>
           <td class="value-cell">${escapeHtml(formatValue(valA))}</td>
           <td class="value-cell">${escapeHtml(formatValue(valB))}</td>
         </tr>
@@ -273,18 +480,13 @@
     });
 
     if (!rows) {
-      return '<div class="section-body empty">No differences found</div>';
+      return '<div class="section-body empty">No differences found — files are identical</div>';
     }
 
     return `
       <table class="data-table">
         <thead>
-          <tr>
-            <th>Variable</th>
-            <th>Status</th>
-            <th>Value A</th>
-            <th>Value B</th>
-          </tr>
+          <tr><th>Variable</th><th>Status</th><th>Value A</th><th>Value B</th></tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
@@ -299,25 +501,20 @@
     const validatedCount = Object.keys(validated).length;
 
     let html = '<div class="env-validation-content">';
-
     html += '<div class="env-mini-stats">';
     html += `<span class="diff-badge" style="background: rgba(16,185,129,0.1); color: var(--brand-success);"><i class="bi bi-check"></i> ${validatedCount} valid</span>`;
-    if (missing.length)
-      html += `<span class="diff-badge" style="background: rgba(239,68,68,0.1); color: var(--brand-danger);"><i class="bi bi-x"></i> ${missing.length} missing</span>`;
-    if (invalid.length)
-      html += `<span class="diff-badge" style="background: rgba(245,158,11,0.1); color: var(--brand-warning);"><i class="bi bi-exclamation"></i> ${invalid.length} invalid</span>`;
-    if (extra.length)
-      html += `<span class="diff-badge" style="background: rgba(99,102,241,0.1); color: var(--brand-info);"><i class="bi bi-plus"></i> ${extra.length} extra</span>`;
+    if (missing.length) html += `<span class="diff-badge" style="background: rgba(239,68,68,0.1); color: var(--brand-danger);"><i class="bi bi-x"></i> ${missing.length} missing</span>`;
+    if (invalid.length) html += `<span class="diff-badge" style="background: rgba(245,158,11,0.1); color: var(--brand-warning);"><i class="bi bi-exclamation"></i> ${invalid.length} invalid</span>`;
+    if (extra.length) html += `<span class="diff-badge" style="background: rgba(6,182,212,0.1); color: var(--brand-info);"><i class="bi bi-plus"></i> ${extra.length} extra</span>`;
     html += "</div>";
 
     if (missing.length) {
-      html += '<div class="env-issues"><small class="env-issues-label">Missing:</small>';
-      html += `<div class="env-issues-list missing">${missing.map(escapeHtml).join(", ")}</div></div>`;
+      html += `<div class="env-issues"><small class="env-issues-label">Missing:</small><div class="env-issues-list missing">${missing.map(escapeHtml).join(", ")}</div></div>`;
     }
 
     if (invalid.length) {
       html += '<div class="env-issues"><small class="env-issues-label">Invalid:</small>';
-      invalid.forEach((item) => {
+      invalid.forEach(item => {
         html += `<div class="env-issues-list invalid"><span class="invalid-key">${escapeHtml(item.key)}</span>: ${escapeHtml(item.reason)}</div>`;
       });
       html += "</div>";
@@ -358,13 +555,14 @@
   }
 
   function renderSection(type, icon, title, body) {
+    const isBodyHtml = typeof body === "string" && (body.startsWith("<div") || body.startsWith("<table"));
     return `
       <div class="result-section">
         <div class="section-header ${type}">
           <i class="bi ${icon}"></i>
           ${title}
         </div>
-        ${typeof body === "string" && body.startsWith("<div") ? body : '<div class="section-body">' + body + "</div>"}
+        ${isBodyHtml ? body : '<div class="section-body">' + body + "</div>"}
       </div>
     `;
   }
@@ -389,7 +587,7 @@
 
   function renderInvalidTable(items) {
     let rows = "";
-    items.forEach((item) => {
+    items.forEach(item => {
       rows += `
         <tr>
           <td class="key-cell">${escapeHtml(item.key)}</td>
@@ -406,11 +604,7 @@
   }
 
   function renderSimpleList(items) {
-    return `
-      <ul class="simple-list">
-        ${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
-      </ul>
-    `;
+    return `<ul class="simple-list">${items.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
   }
 
   function formatValue(val) {
@@ -433,8 +627,8 @@
     validateForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const envFile = document.getElementById("envFile").files[0];
-      const schema = schemaSelect.value;
+      const envFile = document.getElementById("envFile")?.files[0];
+      const schema = document.querySelector('input[name="schema"]:checked')?.value || "generic";
       const schemaFileInput = document.getElementById("schemaFile");
 
       if (!envFile) {
@@ -445,7 +639,7 @@
       const formData = new FormData();
       formData.append("file", envFile);
 
-      let url = "/validate";
+      let url = "/api/validate";
 
       if (schema === "custom") {
         const schemaFile = schemaFileInput?.files[0];
@@ -479,9 +673,9 @@
     compareForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const envA = document.getElementById("envA").files[0];
-      const envB = document.getElementById("envB").files[0];
-      const schema = schemaSelect.value;
+      const envA = document.getElementById("envA")?.files[0];
+      const envB = document.getElementById("envB")?.files[0];
+      const schema = document.querySelector('input[name="schema"]:checked')?.value || "generic";
       const schemaFileInput = document.getElementById("schemaFile");
 
       if (!envA || !envB) {
@@ -493,7 +687,7 @@
       formData.append("env_a", envA);
       formData.append("env_b", envB);
 
-      let url = "/compare";
+      let url = "/api/compare";
 
       if (schema === "custom") {
         const schemaFile = schemaFileInput?.files[0];
@@ -519,4 +713,20 @@
       }
     });
   }
+
+  /* ---------------------------------------------------------------
+     Initialize
+  --------------------------------------------------------------- */
+  function init() {
+    loadSchemas();
+    initFileDropZones();
+  }
+
+  // Run on DOM ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+
 })();
