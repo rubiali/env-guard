@@ -5,14 +5,10 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# deps
-COPY backend/requirements.txt ./requirements.txt
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# código
-COPY backend/app ./app
-COPY backend/app/schemas ./app/schemas
-COPY frontend ./frontend
+COPY app ./app
 
 EXPOSE 8000
 

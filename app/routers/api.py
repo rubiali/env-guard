@@ -1,4 +1,5 @@
-# backend/app/routers/api.py
+# app/routers/api.py
+# (sem alterações - já está correto)
 
 from fastapi import APIRouter, UploadFile, File, Query
 from fastapi.responses import JSONResponse

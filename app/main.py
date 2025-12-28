@@ -1,15 +1,12 @@
-# backend/app/main.py
+# app/main.py
 
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.routers import ui, api
-from app.utils.paths import resolve_frontend_dir
 
-frontend_dir = resolve_frontend_dir()
-
-# injeta no módulo de UI
-ui.FRONTEND_DIR = frontend_dir
+BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI(
     title="Env-Guard",
@@ -17,9 +14,10 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# Monta arquivos estáticos (CSS, JS, imagens)
 app.mount(
     "/static",
-    StaticFiles(directory=frontend_dir / "static"),
+    StaticFiles(directory=BASE_DIR / "static"),
     name="static",
 )
 

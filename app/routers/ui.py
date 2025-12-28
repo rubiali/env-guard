@@ -1,17 +1,16 @@
-# backend/app/routers/ui.py
+# app/routers/ui.py
 
+from pathlib import Path
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
-from pathlib import Path
 
 router = APIRouter()
 
-FRONTEND_DIR: Path | None = None
+TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 
 
 def _read_html(filename: str) -> str:
-    assert FRONTEND_DIR is not None, "FRONTEND_DIR não foi configurado"
-    return (FRONTEND_DIR / filename).read_text(encoding="utf-8")
+    return (TEMPLATES_DIR / filename).read_text(encoding="utf-8")
 
 
 @router.get("/", response_class=HTMLResponse)
