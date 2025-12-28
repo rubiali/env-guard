@@ -37,6 +37,12 @@ SCHEMA_META = {
         "icon": "bi-hexagon",
         "color": "#84cc16",
     },
+    "dockerfile": {
+        "name": "Dockerfile",
+        "description": "Environment variables for Docker containers",
+        "icon": "bi-box-seam",
+        "color": "#2496ed",
+    },
 }
 
 

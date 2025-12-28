@@ -1,0 +1,60 @@
+# app/schemas/dockerfile.yaml
+name: dockerfile
+description: Environment variables for Docker containers and builds
+
+variables:
+  # Runtime
+  PORT:
+    type: integer
+    required: false
+    default: 8000
+    description: Container exposed port
+
+  ENVIRONMENT:
+    type: string
+    required: true
+    enum: [development, staging, production]
+    description: Runtime environment
+
+  TZ:
+    type: string
+    required: false
+    default: "UTC"
+    description: Container timezone
+
+  # Build args
+  APP_VERSION:
+    type: string
+    required: false
+    description: Application version tag
+
+  BUILD_DATE:
+    type: string
+    required: false
+    description: Image build timestamp
+
+  # User/Security
+  APP_USER:
+    type: string
+    required: false
+    default: "app"
+    description: Non-root user to run the application
+
+  APP_UID:
+    type: integer
+    required: false
+    default: 1000
+    description: UID for the application user
+
+  # Healthcheck
+  HEALTHCHECK_PATH:
+    type: string
+    required: false
+    default: "/health"
+    description: Endpoint for container health checks
+
+  HEALTHCHECK_INTERVAL:
+    type: string
+    required: false
+    default: "30s"
+    description: Interval between health checks
