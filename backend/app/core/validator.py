@@ -1,7 +1,7 @@
 # backend/app/core/validator.py
 
 from .parser import parse_env
-from .schema import load_schema
+from .schema import load_schema_by_name, load_schema_from_file
 
 
 class ValidationError(Exception):
@@ -29,9 +29,17 @@ def cast_value(value: str, expected_type: str):
     raise ValidationError(f"Unknown type '{expected_type}'")
 
 
-def validate_env(env_content: str, schema_path: str) -> dict:
+def validate_env(
+    env_content: str,
+    schema_name: str = "generic",
+    custom_schema_content: str | None = None
+) -> dict:
     env = parse_env(env_content)
-    schema = load_schema(schema_path)["variables"]
+
+    if custom_schema_content:
+        schema = load_schema_from_file(custom_schema_content)["variables"]
+    else:
+        schema = load_schema_by_name(schema_name)["variables"]
 
     missing = []
     invalid = []
@@ -59,7 +67,7 @@ def validate_env(env_content: str, schema_path: str) -> dict:
                     "reason": str(e)
                 })
 
-    extra = [k for k in env.keys() if k not in schema]
+    extra = [k for k in env if k not in schema]
 
     return {
         "missing": missing,

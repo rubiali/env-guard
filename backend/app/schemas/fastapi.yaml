@@ -1,0 +1,21 @@
+name: fastapi
+description: FastAPI application schema
+
+variables:
+  DEBUG:
+    type: bool
+    required: true
+
+  PORT:
+    type: int
+    required: true
+    min: 1024
+    max: 65535
+
+  DATABASE_URL:
+    type: string
+    required: true
+
+  SECRET_KEY:
+    type: string
+    required: true

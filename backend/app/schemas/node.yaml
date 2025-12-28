@@ -1,0 +1,17 @@
+name: node
+description: Node.js application schema
+
+variables:
+  NODE_ENV:
+    type: string
+    required: true
+
+  PORT:
+    type: int
+    required: true
+    min: 1024
+    max: 65535
+
+  DATABASE_URL:
+    type: string
+    required: true

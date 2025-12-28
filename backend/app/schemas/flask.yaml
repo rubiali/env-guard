@@ -1,0 +1,19 @@
+name: flask
+description: Flask application schema
+
+variables:
+  FLASK_ENV:
+    type: string
+    required: true
+
+  DEBUG:
+    type: bool
+    required: true
+
+  SECRET_KEY:
+    type: string
+    required: true
+
+  DATABASE_URL:
+    type: string
+    required: false

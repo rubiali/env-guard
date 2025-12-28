@@ -1,0 +1,19 @@
+name: django
+description: Django application schema
+
+variables:
+  DEBUG:
+    type: bool
+    required: true
+
+  DJANGO_SECRET_KEY:
+    type: string
+    required: true
+
+  ALLOWED_HOSTS:
+    type: string
+    required: true
+
+  DATABASE_URL:
+    type: string
+    required: true

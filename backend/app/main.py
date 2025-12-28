@@ -4,8 +4,7 @@ from pathlib import Path
 
 from app.core.validator import validate_env
 from app.core.diff import compare_envs
-from app.core.parser import EnvParseError
-from app.core.schema import SchemaLoadError
+from fastapi import Query
 from fastapi.staticfiles import StaticFiles
 
 SCHEMA_PATH = "app/schemas/schema.yaml"
@@ -53,24 +52,23 @@ def _is_env_file(filename: str) -> bool:
 
 
 @app.post("/validate")
-async def validate_env_file(file: UploadFile = File(...)):
-    if not _is_env_file(file.filename):
-        raise HTTPException(status_code=400, detail="Invalid env file name")
+async def validate_env_file(
+    file: UploadFile = File(...),
+    schema: str = Query(default="generic"),
+    schema_file: UploadFile | None = File(default=None)
+):
+    content = (await file.read()).decode("utf-8")
 
-    try:
-        content = (await file.read()).decode("utf-8")
-    except UnicodeDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid file encoding")
+    schema_content = None
+    if schema_file:
+        schema_content = (await schema_file.read()).decode("utf-8")
 
-    try:
-        result = validate_env(content, SCHEMA_PATH)
-        return JSONResponse(content=result)
-
-    except EnvParseError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    except SchemaLoadError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    result = validate_env(
+        content,
+        schema_name=schema,
+        custom_schema_content=schema_content
+    )
+    return JSONResponse(content=result)
 
 
 @app.post("/compare")
