@@ -1,18 +1,39 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+# backend/app/main.py
+
+from fastapi import FastAPI, UploadFile, File, Query
 from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
 from app.core.validator import validate_env
 from app.core.diff import compare_envs
-from fastapi import Query
-from fastapi.staticfiles import StaticFiles
 
-SCHEMA_PATH = "app/schemas/schema.yaml"
 
-from pathlib import Path
+def _resolve_frontend_dir() -> Path:
+    """
+    Resolve o diretório do frontend independente do ambiente.
+    Funciona tanto em Docker quanto em desenvolvimento local.
+    """
+    base = Path(__file__).resolve().parent  # .../app/
+    
+    # Caminho 1: Docker ou monorepo flat (/app/frontend)
+    docker_path = base.parent / "frontend"
+    if docker_path.is_dir():
+        return docker_path
+    
+    # Caminho 2: Desenvolvimento local (backend/ e frontend/ são irmãos)
+    local_path = base.parent.parent / "frontend"
+    if local_path.is_dir():
+        return local_path
+    
+    raise RuntimeError(
+        f"Frontend não encontrado. Tentei:\n"
+        f"  - {docker_path}\n"
+        f"  - {local_path}"
+    )
 
-BASE_DIR = Path(__file__).resolve().parent
-FRONTEND_DIR = BASE_DIR.parent / "frontend"
+
+FRONTEND_DIR = _resolve_frontend_dir()
 
 app = FastAPI(
     title="Env-Guard",
@@ -25,6 +46,7 @@ app.mount(
     StaticFiles(directory=FRONTEND_DIR / "static"),
     name="static"
 )
+
 
 # --------------------
 # UI ROUTES
@@ -48,10 +70,6 @@ def ui_compare():
 # --------------------
 # API ROUTES
 # --------------------
-
-def _is_env_file(filename: str) -> bool:
-    return True
-
 
 @app.post("/validate")
 async def validate_env_file(
