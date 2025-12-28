@@ -13,8 +13,22 @@
     rel="stylesheet"
   />
   <link href="/static/styles.css" rel="stylesheet" />
+  <script>
+    // Prevent flash of wrong theme
+    (function() {
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = saved || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 <body>
+
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+  <i class="bi bi-sun-fill icon-sun"></i>
+  <i class="bi bi-moon-fill icon-moon"></i>
+</button>
 
 <div class="container py-5" style="max-width: 600px;">
   
@@ -51,13 +65,15 @@
   </div>
 
 </div>
+
 <footer class="site-footer">
   <a href="https://github.com/Rubiali" target="_blank" rel="noopener" class="author-credit">
     <i class="bi bi-code-slash"></i>
-    Built by <span class="author-name">Rubiali</span>
+    Built by <span class="author-name">rubiali</span>
     <i class="bi bi-github"></i>
   </a>
 </footer>
 
+<script src="/static/app.js"></script>
 </body>
 </html>

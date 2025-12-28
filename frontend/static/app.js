@@ -6,6 +6,34 @@
   "use strict";
 
   /* ---------------------------------------------------------------
+     Theme Toggle
+  --------------------------------------------------------------- */
+  const themeToggle = document.getElementById("themeToggle");
+
+  function getCurrentTheme() {
+    return document.documentElement.getAttribute("data-theme") || "light";
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const current = getCurrentTheme();
+      setTheme(current === "dark" ? "light" : "dark");
+    });
+  }
+
+  // Listen for system theme changes (if user hasn't manually set)
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+    if (!localStorage.getItem("theme")) {
+      setTheme(e.matches ? "dark" : "light");
+    }
+  });
+
+  /* ---------------------------------------------------------------
      DOM Elements
   --------------------------------------------------------------- */
   const schemaSelect = document.getElementById("schemaSelect");
@@ -15,11 +43,10 @@
   const resultPanel = document.getElementById("resultPanel");
   const resultFormatted = document.getElementById("resultFormatted");
   const resultJson = document.getElementById("resultJson");
-  const jsonToggle = document.getElementById("jsonToggle");
   const submitBtn = document.getElementById("submitBtn");
 
   let currentData = null;
-  let currentMode = null; // 'validate' or 'compare'
+  let currentMode = null;
 
   /* ---------------------------------------------------------------
      Schema Selector Toggle
@@ -33,7 +60,7 @@
     });
   }
 
-    /* ---------------------------------------------------------------
+  /* ---------------------------------------------------------------
      View Toggle (Segmented Control)
   --------------------------------------------------------------- */
   const viewToggleGroup = document.querySelector(".view-toggle-group");
@@ -43,19 +70,16 @@
       const btn = e.target.closest(".view-toggle-btn");
       if (!btn) return;
 
-      // Update active state
       viewToggleGroup.querySelectorAll(".view-toggle-btn").forEach((b) => {
         b.classList.remove("active");
       });
       btn.classList.add("active");
 
-      // Toggle views
       const view = btn.dataset.view;
       resultFormatted.classList.toggle("d-none", view === "json");
       resultJson.classList.toggle("d-none", view === "formatted");
     });
   }
-
 
   /* ---------------------------------------------------------------
      Button Loading State
@@ -78,17 +102,14 @@
     currentData = data;
     currentMode = mode;
 
-    // JSON view
     resultJson.textContent = JSON.stringify(data, null, 2);
 
-    // Formatted view
     if (mode === "validate") {
       resultFormatted.innerHTML = renderValidateResult(data);
     } else {
       resultFormatted.innerHTML = renderCompareResult(data);
     }
 
-    // Reset toggle to formatted (default)
     if (viewToggleGroup) {
       viewToggleGroup.querySelectorAll(".view-toggle-btn").forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.view === "formatted");
@@ -109,7 +130,6 @@
 
     let html = "";
 
-    // Summary (sempre visível)
     html += renderSummary({
       validated: validatedKeys.length,
       missing: missing.length,
@@ -117,7 +137,6 @@
       extra: extra.length,
     });
 
-    // Validated (só se tiver)
     if (validatedKeys.length) {
       html += renderSection(
         "success",
@@ -127,7 +146,6 @@
       );
     }
 
-    // Missing (só se tiver)
     if (missing.length) {
       html += renderSection(
         "danger",
@@ -137,7 +155,6 @@
       );
     }
 
-    // Invalid (só se tiver)
     if (invalid.length) {
       html += renderSection(
         "warning",
@@ -147,7 +164,6 @@
       );
     }
 
-    // Extra (só se tiver)
     if (extra.length) {
       html += renderSection(
         "info",
@@ -160,7 +176,6 @@
     return html;
   }
 
-
   /* ---------------------------------------------------------------
      Render Compare Result
   --------------------------------------------------------------- */
@@ -169,7 +184,6 @@
 
     let html = "";
 
-    // Diff Summary (sempre visível)
     html += '<div class="summary-stats">';
     html += `
       <div class="stat-item info">
@@ -187,7 +201,6 @@
     `;
     html += "</div>";
 
-    // Differences Section (só se tiver diferenças)
     if (only_in_a.length || only_in_b.length || different_values.length) {
       html += renderSection(
         "neutral",
@@ -197,16 +210,13 @@
       );
     }
 
-    // Side by side validation
     html += '<div class="compare-grid">';
 
-    // Env A
     html += '<div class="env-panel">';
     html += '<div class="env-panel-header env-a">Env A Validation</div>';
     html += renderEnvValidationCompact(validation.a);
     html += "</div>";
 
-    // Env B
     html += '<div class="env-panel">';
     html += '<div class="env-panel-header env-b">Env B Validation</div>';
     html += renderEnvValidationCompact(validation.b);
@@ -217,7 +227,6 @@
     return html;
   }
 
-
   /* ---------------------------------------------------------------
      Render Differences Table
   --------------------------------------------------------------- */
@@ -226,7 +235,6 @@
 
     let rows = "";
 
-    // Only in A
     only_in_a.forEach((key) => {
       const valA = validation.a.validated[key];
       rows += `
@@ -239,7 +247,6 @@
       `;
     });
 
-    // Only in B
     only_in_b.forEach((key) => {
       const valB = validation.b.validated[key];
       rows += `
@@ -252,7 +259,6 @@
       `;
     });
 
-    // Different values
     different_values.forEach((key) => {
       const valA = validation.a.validated[key];
       const valB = validation.b.validated[key];
@@ -292,36 +298,33 @@
     const { missing, invalid, extra, validated } = validation;
     const validatedCount = Object.keys(validated).length;
 
-    let html = '<div style="padding: 0.75rem;">';
+    let html = '<div class="env-validation-content">';
 
-    // Mini stats
-    html += '<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">';
-    html += `<span class="diff-badge" style="background: rgba(16,185,129,0.1); color: #047857;"><i class="bi bi-check"></i> ${validatedCount} valid</span>`;
+    html += '<div class="env-mini-stats">';
+    html += `<span class="diff-badge" style="background: rgba(16,185,129,0.1); color: var(--brand-success);"><i class="bi bi-check"></i> ${validatedCount} valid</span>`;
     if (missing.length)
-      html += `<span class="diff-badge" style="background: rgba(239,68,68,0.1); color: #dc2626;"><i class="bi bi-x"></i> ${missing.length} missing</span>`;
+      html += `<span class="diff-badge" style="background: rgba(239,68,68,0.1); color: var(--brand-danger);"><i class="bi bi-x"></i> ${missing.length} missing</span>`;
     if (invalid.length)
-      html += `<span class="diff-badge" style="background: rgba(245,158,11,0.1); color: #b45309;"><i class="bi bi-exclamation"></i> ${invalid.length} invalid</span>`;
+      html += `<span class="diff-badge" style="background: rgba(245,158,11,0.1); color: var(--brand-warning);"><i class="bi bi-exclamation"></i> ${invalid.length} invalid</span>`;
     if (extra.length)
-      html += `<span class="diff-badge" style="background: rgba(99,102,241,0.1); color: #4f46e5;"><i class="bi bi-plus"></i> ${extra.length} extra</span>`;
+      html += `<span class="diff-badge" style="background: rgba(99,102,241,0.1); color: var(--brand-info);"><i class="bi bi-plus"></i> ${extra.length} extra</span>`;
     html += "</div>";
 
-    // Issues list
     if (missing.length) {
-      html += '<div style="margin-bottom: 0.5rem;"><small class="text-muted">Missing:</small>';
-      html += `<div style="font-family: monospace; font-size: 0.75rem; color: #dc2626;">${missing.map(escapeHtml).join(", ")}</div></div>`;
+      html += '<div class="env-issues"><small class="env-issues-label">Missing:</small>';
+      html += `<div class="env-issues-list missing">${missing.map(escapeHtml).join(", ")}</div></div>`;
     }
 
     if (invalid.length) {
-      html += '<div><small class="text-muted">Invalid:</small>';
+      html += '<div class="env-issues"><small class="env-issues-label">Invalid:</small>';
       invalid.forEach((item) => {
-        html += `<div style="font-family: monospace; font-size: 0.75rem;"><span style="color: #b45309;">${escapeHtml(item.key)}</span>: ${escapeHtml(item.reason)}</div>`;
+        html += `<div class="env-issues-list invalid"><span class="invalid-key">${escapeHtml(item.key)}</span>: ${escapeHtml(item.reason)}</div>`;
       });
       html += "</div>";
     }
 
     if (!missing.length && !invalid.length && validatedCount > 0) {
-      html +=
-        '<div style="color: #047857; font-size: 0.875rem;"><i class="bi bi-check-circle me-1"></i>All variables valid</div>';
+      html += '<div class="env-all-valid"><i class="bi bi-check-circle me-1"></i>All variables valid</div>';
     }
 
     html += "</div>";
