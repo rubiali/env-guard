@@ -1,9 +1,9 @@
 from .validator import validate_env
 
 
-def compare_envs(env_a: str, env_b: str, schema_path: str) -> dict:
-    result_a = validate_env(env_a, schema_path)
-    result_b = validate_env(env_b, schema_path)
+def compare_envs(env_a: str, env_b: str, schema_name: str = "generic") -> dict:
+    result_a = validate_env(env_a, schema_name=schema_name)
+    result_b = validate_env(env_b, schema_name=schema_name)
 
     values_a = result_a["validated"]
     values_b = result_b["validated"]

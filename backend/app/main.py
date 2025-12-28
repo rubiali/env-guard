@@ -74,17 +74,15 @@ async def validate_env_file(
 @app.post("/compare")
 async def compare_env_files(
     env_a: UploadFile = File(...),
-    env_b: UploadFile = File(...)
+    env_b: UploadFile = File(...),
+    schema: str = Query(default="generic")
 ):
-    for f in (env_a, env_b):
-        if not _is_env_file(f.filename):
-            raise HTTPException(status_code=400, detail="Invalid env file name")
+    content_a = (await env_a.read()).decode("utf-8")
+    content_b = (await env_b.read()).decode("utf-8")
 
-    try:
-        content_a = (await env_a.read()).decode("utf-8")
-        content_b = (await env_b.read()).decode("utf-8")
-    except UnicodeDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid file encoding")
-
-    result = compare_envs(content_a, content_b, SCHEMA_PATH)
+    result = compare_envs(
+        content_a,
+        content_b,
+        schema_name=schema
+    )
     return JSONResponse(content=result)
